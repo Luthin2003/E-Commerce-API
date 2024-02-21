@@ -10,6 +10,7 @@ api = Api(app)
 # Define Product model
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, nullable=False)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=True)
     price = db.Column(db.Float, nullable=False)
@@ -26,6 +27,24 @@ class ProductsResource(Resource):
     def get(self):
         products = Product.query.all()
         return jsonify([{'id': p.id, 'name': p.name, 'description': p.description, 'price': p.price, 'image_url': p.image_url} for p in products])
+    
+    def post(self):
+        data = request.get_json()
+        if 'product_id' not in data or 'price' not in data  or 'name' not in data or 'description' not in data  or 'image_url' not in data:
+            abort(400)
+
+        price = data['price']
+        name = data["name"]
+        image_url = data["image_url"]
+        description = data["description"]
+        product_id = data['product_id']
+
+        product_item = Product(price=price, name=name , image_url=image_url ,description = description , product_id=product_id )
+        db.session.add(product_item )
+
+        db.session.commit()
+        return {'message': 'new Product added successfully to store'}, 201
+
 
 class ProductResource(Resource):
     def get(self, product_id):
